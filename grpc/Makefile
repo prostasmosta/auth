@@ -26,3 +26,7 @@ generate-user-api:
 	--go-grpc_out=pkg/user_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	api/user_v1/user.proto
+
+build:
+	GOOS=linux GOARCH=amd64 go build -o service_linux cmd/grpc_server/main.go
+	
