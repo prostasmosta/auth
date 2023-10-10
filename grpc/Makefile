@@ -30,3 +30,11 @@ generate-user-api:
 build:
 	GOOS=linux GOARCH=amd64 go build -o service_linux cmd/grpc_server/main.go
 	
+copy-to-server:
+	scp service_linux root@31.129.33.31:
+
+docker-build-and-push:
+	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/regestry/test-server:v0.0.1 .
+	docker login -u token -p fde440f8-0231-4a1c-b2d0-dc94ade0a218 cr.selcloud.ru/regestry
+	docker push cr.selcloud.ru/regestry/test-server:v0.0.1
+	
