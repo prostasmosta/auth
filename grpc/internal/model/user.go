@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	ID              int64
+	Id              int64
 	Info            UserInfo
 	Password        string
 	PasswordConfirm string
@@ -27,7 +27,7 @@ type CreateUser struct {
 }
 
 type GetUser struct {
-	ID        int64
+	Id        int64
 	Info      UserInfo
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime

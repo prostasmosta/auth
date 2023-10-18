@@ -4,13 +4,12 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/prostasmosta/auth/grpc/internal/repository/user/converter"
-
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/prostasmosta/auth/grpc/internal/repository"
-	"github.com/prostasmosta/auth/grpc/internal/repository/user/model"
 
-	grpcUser "github.com/prostasmosta/auth/grpc/pkg/user_v1"
+	"github.com/prostasmosta/auth/grpc/internal/model"
+	"github.com/prostasmosta/auth/grpc/internal/repository"
+	"github.com/prostasmosta/auth/grpc/internal/repository/user/converter"
+	modelRepo "github.com/prostasmosta/auth/grpc/internal/repository/user/model"
 )
 
 const (
@@ -34,7 +33,7 @@ func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }
 
-func (r *repo) Create(ctx context.Context, params *grpcUser.CreateRequest) (int64, error) {
+func (r *repo) Create(ctx context.Context, params *model.CreateUser) (int64, error) {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, roleColumn, passwordColumn, passwordConfirmColumn).
@@ -55,7 +54,7 @@ func (r *repo) Create(ctx context.Context, params *grpcUser.CreateRequest) (int6
 	return id, nil
 }
 
-func (r *repo) Get(ctx context.Context, id int64) (*grpcUser.GetResponse, error) {
+func (r *repo) Get(ctx context.Context, id int64) (*model.GetUser, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(tableName).
@@ -67,8 +66,8 @@ func (r *repo) Get(ctx context.Context, id int64) (*grpcUser.GetResponse, error)
 		return nil, err
 	}
 
-	var user model.GetUser
-	err = r.db.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
+	var user modelRepo.GetUser
+	err = r.db.QueryRow(ctx, query, args...).Scan(&user.Id, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
