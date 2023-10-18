@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/prostasmosta/auth/grpc/internal/repository"
-	"github.com/prostasmosta/auth/grpc/internal/repository/user"
-	"log"
-	"net"
-
-	grpcUser "github.com/prostasmosta/auth/grpc/pkg/user_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"log"
+	"net"
+
+	"github.com/prostasmosta/auth/grpc/internal/converter"
+	userRepository "github.com/prostasmosta/auth/grpc/internal/repository/user"
+	"github.com/prostasmosta/auth/grpc/internal/service"
+	userService "github.com/prostasmosta/auth/grpc/internal/service/user"
+	grpcUser "github.com/prostasmosta/auth/grpc/pkg/user_v1"
 )
 
 const (
@@ -22,16 +24,16 @@ const (
 
 type server struct {
 	grpcUser.UnimplementedUserV1Server
-	userRepository repository.UserRepository
+	userService service.UserService
 }
 
 func (s *server) Create(ctx context.Context, req *grpcUser.CreateRequest) (*grpcUser.CreateResponse, error) {
-	id, err := s.userRepository.Create(ctx, req)
+	id, err := s.userService.Create(ctx, converter.ToCreateUserFromProto(req))
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("inserteduser with id: %d", id)
+	log.Printf("inserted user with id: %d", id)
 
 	return &grpcUser.CreateResponse{
 		Id: id,
@@ -39,7 +41,7 @@ func (s *server) Create(ctx context.Context, req *grpcUser.CreateRequest) (*grpc
 }
 
 func (s *server) Get(ctx context.Context, req *grpcUser.GetRequest) (*grpcUser.GetResponse, error) {
-	userObj, err := s.userRepository.Get(ctx, req.GetId())
+	userObj, err := s.userService.Get(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}
@@ -47,15 +49,17 @@ func (s *server) Get(ctx context.Context, req *grpcUser.GetRequest) (*grpcUser.G
 	log.Printf("id: %d, name: %s, email: %s, role: %v, created_at: %v, updated_at: %v\n",
 		userObj.Id, userObj.Info.Name, userObj.Info.Email, userObj.Info.Role, userObj.CreatedAt, userObj.UpdatedAt)
 
+	convertedUser := converter.ToGetUserFromService(userObj)
+
 	return &grpcUser.GetResponse{
-		Id: userObj.Id,
+		Id: convertedUser.Id,
 		Info: &grpcUser.UserInfo{
-			Name:  userObj.Info.Name,
-			Email: userObj.Info.Email,
-			Role:  userObj.Info.Role,
+			Name:  convertedUser.Info.Name,
+			Email: convertedUser.Info.Email,
+			Role:  convertedUser.Info.Role,
 		},
-		CreatedAt: userObj.CreatedAt,
-		UpdatedAt: userObj.UpdatedAt,
+		CreatedAt: convertedUser.CreatedAt,
+		UpdatedAt: convertedUser.UpdatedAt,
 	}, nil
 }
 
@@ -85,11 +89,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	userRepo := user.NewRepository(pool)
+	userRepo := userRepository.NewRepository(pool)
+	userServ := userService.NewService(userRepo)
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	grpcUser.RegisterUserV1Server(s, &server{userRepository: userRepo})
+	grpcUser.RegisterUserV1Server(s, &server{userService: userServ})
 
 	log.Printf("server listening at: %v", lis.Addr())
 

@@ -1,30 +1,23 @@
 package converter
 
 import (
-	"github.com/prostasmosta/auth/grpc/internal/repository/user/model"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	grpcUser "github.com/prostasmosta/auth/grpc/pkg/user_v1"
+	"github.com/prostasmosta/auth/grpc/internal/model"
+	modelRepo "github.com/prostasmosta/auth/grpc/internal/repository/user/model"
 )
 
-func ToUserFromRepo(user *model.GetUser) *grpcUser.GetResponse {
-	var updatedAt *timestamppb.Timestamp
-	if user.UpdatedAt.Valid {
-		updatedAt = timestamppb.New(user.UpdatedAt.Time)
-	}
-
-	return &grpcUser.GetResponse{
-		Id:        user.ID,
+func ToUserFromRepo(user *modelRepo.GetUser) *model.GetUser {
+	return &model.GetUser{
+		Id:        user.Id,
 		Info:      ToUserInfoFromRepo(user.Info),
-		CreatedAt: timestamppb.New(user.CreatedAt),
-		UpdatedAt: updatedAt,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 }
 
-func ToUserInfoFromRepo(info model.UserInfo) *grpcUser.UserInfo {
-	return &grpcUser.UserInfo{
+func ToUserInfoFromRepo(info modelRepo.UserInfo) model.UserInfo {
+	return model.UserInfo{
 		Name:  info.Name,
 		Email: info.Email,
-		Role:  grpcUser.Role(info.Role),
+		Role:  info.Role,
 	}
 }
