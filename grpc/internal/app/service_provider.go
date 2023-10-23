@@ -2,13 +2,15 @@ package app
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/prostasmosta/auth/grpc/internal/config"
-	"github.com/prostasmosta/auth/grpc/internal/config/env"
 	"log"
 
 	"github.com/prostasmosta/auth/grpc/internal/api/user"
+	"github.com/prostasmosta/auth/grpc/internal/client/db"
+	"github.com/prostasmosta/auth/grpc/internal/client/db/pg"
+	"github.com/prostasmosta/auth/grpc/internal/client/db/transaction"
 	"github.com/prostasmosta/auth/grpc/internal/closer"
+	"github.com/prostasmosta/auth/grpc/internal/config"
+	"github.com/prostasmosta/auth/grpc/internal/config/env"
 	"github.com/prostasmosta/auth/grpc/internal/repository"
 	userRepository "github.com/prostasmosta/auth/grpc/internal/repository/user"
 	"github.com/prostasmosta/auth/grpc/internal/service"
@@ -19,7 +21,8 @@ type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
 
-	pgPool         *pgxpool.Pool
+	dbClient       db.Client
+	txManager      db.TxManager
 	userRepository repository.UserRepository
 
 	userService service.UserService
@@ -57,31 +60,36 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) PgPool(ctx context.Context) *pgxpool.Pool {
-	if s.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, s.PGConfig().DSN())
+func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		cl, err := pg.New(ctx, s.PGConfig().DSN())
 		if err != nil {
-			log.Fatalf("failed to connect to db: %v", err)
+			log.Fatalf("failed to create db client: %v", err)
 		}
 
-		err = pool.Ping(ctx)
+		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("ping error: %s", err.Error())
 		}
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
+		closer.Add(cl.Close)
 
-		s.pgPool = pool
+		s.dbClient = cl
 	}
 
-	return s.pgPool
+	return s.dbClient
+}
+
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+
+	return s.txManager
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.PgPool(ctx))
+		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.userRepository
@@ -91,6 +99,7 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
 		s.userService = userService.NewService(
 			s.UserRepository(ctx),
+			s.TxManager(ctx),
 		)
 	}
 

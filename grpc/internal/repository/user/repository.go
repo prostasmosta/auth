@@ -4,8 +4,7 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
-
+	"github.com/prostasmosta/auth/grpc/internal/client/db"
 	"github.com/prostasmosta/auth/grpc/internal/model"
 	"github.com/prostasmosta/auth/grpc/internal/repository"
 	"github.com/prostasmosta/auth/grpc/internal/repository/user/converter"
@@ -26,10 +25,10 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-func NewRepository(db *pgxpool.Pool) repository.UserRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
@@ -45,8 +44,13 @@ func (r *repo) Create(ctx context.Context, params *model.CreateUser) (int64, err
 		return 0, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Create",
+		QueryRaw: query,
+	}
+
 	var id int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&id)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -66,8 +70,13 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.GetUser, error) {
 		return nil, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
 	var user modelRepo.GetUser
-	err = r.db.QueryRow(ctx, query, args...).Scan(&user.Id, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		return nil, err
 	}
