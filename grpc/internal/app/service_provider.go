@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
-	"github.com/prostasmosta/auth/grpc/internal/client/db/pg"
 	"log"
 
 	"github.com/prostasmosta/auth/grpc/internal/api/user"
 	"github.com/prostasmosta/auth/grpc/internal/client/db"
+	"github.com/prostasmosta/auth/grpc/internal/client/db/pg"
+	"github.com/prostasmosta/auth/grpc/internal/client/db/transaction"
 	"github.com/prostasmosta/auth/grpc/internal/closer"
 	"github.com/prostasmosta/auth/grpc/internal/config"
 	"github.com/prostasmosta/auth/grpc/internal/config/env"
@@ -21,6 +22,7 @@ type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 
 	dbClient       db.Client
+	txManager      db.TxManager
 	userRepository repository.UserRepository
 
 	userService service.UserService
@@ -77,6 +79,14 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+
+	return s.txManager
+}
+
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
@@ -89,6 +99,7 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
 		s.userService = userService.NewService(
 			s.UserRepository(ctx),
+			s.TxManager(ctx),
 		)
 	}
 
