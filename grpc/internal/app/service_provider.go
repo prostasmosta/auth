@@ -5,16 +5,16 @@ import (
 	"log"
 
 	"github.com/prostasmosta/auth/grpc/internal/api/user"
-	"github.com/prostasmosta/auth/grpc/internal/client/db"
-	"github.com/prostasmosta/auth/grpc/internal/client/db/pg"
-	"github.com/prostasmosta/auth/grpc/internal/client/db/transaction"
-	"github.com/prostasmosta/auth/grpc/internal/closer"
 	"github.com/prostasmosta/auth/grpc/internal/config"
 	"github.com/prostasmosta/auth/grpc/internal/config/env"
 	"github.com/prostasmosta/auth/grpc/internal/repository"
 	userRepository "github.com/prostasmosta/auth/grpc/internal/repository/user"
 	"github.com/prostasmosta/auth/grpc/internal/service"
 	userService "github.com/prostasmosta/auth/grpc/internal/service/user"
+	"github.com/prostasmosta/platform_common/pkg/closer"
+	"github.com/prostasmosta/platform_common/pkg/db"
+	"github.com/prostasmosta/platform_common/pkg/db/pg"
+	"github.com/prostasmosta/platform_common/pkg/db/transaction"
 )
 
 type serviceProvider struct {

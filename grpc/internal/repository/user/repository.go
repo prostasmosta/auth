@@ -4,11 +4,11 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/prostasmosta/auth/grpc/internal/client/db"
 	"github.com/prostasmosta/auth/grpc/internal/model"
 	"github.com/prostasmosta/auth/grpc/internal/repository"
 	"github.com/prostasmosta/auth/grpc/internal/repository/user/converter"
 	modelRepo "github.com/prostasmosta/auth/grpc/internal/repository/user/model"
+	"github.com/prostasmosta/platform_common/pkg/db"
 )
 
 const (

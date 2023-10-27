@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/prostasmosta/auth/grpc/internal/closer"
 	"github.com/prostasmosta/auth/grpc/internal/config"
 	grpcUser "github.com/prostasmosta/auth/grpc/pkg/user_v1"
+	"github.com/prostasmosta/platform_common/pkg/closer"
 )
 
 type App struct {
