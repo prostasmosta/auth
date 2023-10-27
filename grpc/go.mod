@@ -1,6 +1,6 @@
 module github.com/prostasmosta/auth/grpc
 
-go 1.21
+go 1.21.1
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
@@ -8,10 +8,11 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/georgysavva/scany v1.2.1
 	github.com/gojuno/minimock/v3 v3.1.3
-	github.com/jackc/pgconn v1.14.0
+	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
+	github.com/prostasmosta/platform_common v0.0.0-20231027155421-ba8a7794fa44
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.31.0

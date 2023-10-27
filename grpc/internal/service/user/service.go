@@ -1,9 +1,9 @@
 package user
 
 import (
-	"github.com/prostasmosta/auth/grpc/internal/client/db"
 	"github.com/prostasmosta/auth/grpc/internal/repository"
 	"github.com/prostasmosta/auth/grpc/internal/service"
+	"github.com/prostasmosta/platform_common/pkg/db"
 )
 
 type serv struct {
