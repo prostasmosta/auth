@@ -9,6 +9,11 @@ import (
 )
 
 func (s *Server) Create(ctx context.Context, req *grpcUser.CreateRequest) (*grpcUser.CreateResponse, error) {
+	err := req.ValidateAll()
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := s.userService.Create(ctx, converter.ToCreateUserFromProto(req))
 	if err != nil {
 		return nil, err
