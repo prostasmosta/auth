@@ -9,6 +9,11 @@ import (
 )
 
 func (s *Server) Get(ctx context.Context, req *grpcUser.GetRequest) (*grpcUser.GetResponse, error) {
+	err := req.ValidateAll()
+	if err != nil {
+		return nil, err
+	}
+
 	userObj, err := s.userService.Get(ctx, req.GetId())
 	if err != nil {
 		return nil, err

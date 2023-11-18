@@ -8,8 +8,16 @@ type GRPCConfig interface {
 	Address() string
 }
 
+type HTTPConfig interface {
+	Address() string
+}
+
 type PGConfig interface {
 	DSN() string
+}
+
+type SwaggerConfig interface {
+	Address() string
 }
 
 func Load(path string) error {

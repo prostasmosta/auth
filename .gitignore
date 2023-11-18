@@ -2,3 +2,4 @@
 /grpc/bin/
 /postgres/bin/
 /grpc/.env
+/grpc/vendor.protogen/
