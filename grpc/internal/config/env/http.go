@@ -1,11 +1,12 @@
 package env
 
 import (
-	"github.com/prostasmosta/auth/grpc/internal/config"
 	"net"
 	"os"
 
 	"github.com/pkg/errors"
+
+	"github.com/prostasmosta/auth/grpc/internal/config"
 )
 
 const (

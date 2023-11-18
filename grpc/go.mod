@@ -12,6 +12,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
 	github.com/prostasmosta/platform_common v0.0.0-20231027165520-290757aa0071
+	github.com/rakyll/statik v0.1.7
+	github.com/rs/cors v1.10.1
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/grpc v1.58.0
